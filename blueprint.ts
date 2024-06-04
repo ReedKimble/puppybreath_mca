@@ -64,6 +64,8 @@ class Blueprint {
 
     //% block="set %blueprint(myBlueprint) action animation|facing $facing|doing %action=actionName_enum_shim|to %value=animation_editor"
     //% group="Modify"
+    //% action.shadow="actionName_enum_shim"
+    //% value.shadow="animation_editor"
     setImages(facing: FacingDirection, action: number, value: Image[]): void {
         this._images.getItem(facing).setItem(action, value)
     }
@@ -124,6 +126,7 @@ namespace blueprints {
 
     //% block="create blueprint named $name of kind %kind=spritekind"
     //% group="Access"
+    //% kind.shadow="spritekind"
     export function createBlueprint(name: string, kind: number): Blueprint {
         const result: Blueprint = new Blueprint(name, kind)
         _blueprints.setItem(name, result)
@@ -146,7 +149,7 @@ namespace blueprints {
     }
 
     //% draggableParameters="reporter"
-    //% block="on $blueprint update of $obj" group="Modify"
+    //% block="on $blueprint=variables_get(myBlueprint) update of $obj=variables_get(myGameObject)" group="Modify"
     //% handlerStatement
     export function onUpdate(blueprint: Blueprint, value: (obj: GameObject) => void): void {
         blueprint._aiUpdate = value

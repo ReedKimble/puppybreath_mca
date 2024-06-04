@@ -3,7 +3,7 @@
  * Game processing
  **/
 //% color="#C44FFF" weight=200 icon="\uf1b9" block="Engine"
-//% groups='["Time","Action Name","Data Name"]'
+//% groups='["Time","Access","Named Value"]'
 namespace engine {
 
     const _gameObjects: GameObject[] = []
@@ -37,16 +37,22 @@ namespace engine {
         _destroyQueue.push(value)
     }
 
-    //% block="Get All Game Objects"
+    //% block="get all game objects"
     //% group="Access"
     export function getGameObjects(): GameObject[] { return _gameObjects }
 
-    //% block="Get All Game Objects of $kind=spritekind"
+    //% block="get all game objects of $kind=spritekind"
     //% group="Access"
     export function _getGameObjects(kind: number): GameObject[] {
         return _gameObjects.filter((value: GameObject) => {
             return (value._blueprint.getKind() == kind)
         })
+    }
+
+    //% block="destroy all game objects"
+    //% group="Access"
+    export function destroyAllGameObjects(): void {
+        _gameObjects.forEach((item: GameObject) => { _destroyQueue.push(item) })
     }
 
     //% block="frame time"
@@ -56,12 +62,12 @@ namespace engine {
     }
 
     //% block="facing $value"
-    //% group="Data"
+    //% group="Named Value"
     export function getFacing(value: FacingDirection): FacingDirection { return value }
 
     //% shim=ENUM_GET
     //% blockId=actionName_enum_shim
-    //% block="$arg" group="Action Name"
+    //% block="$arg" group="Named Value"
     //% enumName="ActionName"
     //% enumMemberName="action"
     //% enumPromptHint="e.g. Walk, Attack, ..."
@@ -72,7 +78,7 @@ namespace engine {
 
     //% shim=ENUM_GET
     //% blockId=dataName_enum_shim
-    //% block="$arg" group="Data Name"
+    //% block="$arg" group="Named Value"
     //% enumName="DataName"
     //% enumMemberName="data"
     //% enumPromptHint="e.g. Life, Damage, ..."
