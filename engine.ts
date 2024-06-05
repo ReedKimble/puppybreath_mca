@@ -82,7 +82,7 @@ namespace engine {
     //% enumName="DataName"
     //% enumMemberName="data"
     //% enumPromptHint="e.g. Life, Damage, ..."
-    //% enumInitialMembers="Life, Damage, Score, Speed, DamageCooldown, AttackCooldown, AttackDuration"
+    //% enumInitialMembers="Life, Damage, Score, Speed, AnimateRate, DamageCooldown, AttackCooldown, AttackDuration"
     export function _dataNameEnumShim(arg: number) {
         return arg;
     }
@@ -99,5 +99,5 @@ enum InitialActionName {
 }
 
 enum InitialDataName {
-    Life, Damage, Score, Speed, DamageCooldown, AttackCooldown, AttackDuration
+    Life, Damage, Score, Speed, AnimateRate, DamageCooldown, AttackCooldown, AttackDuration
 }

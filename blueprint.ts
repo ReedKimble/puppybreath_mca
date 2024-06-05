@@ -6,6 +6,7 @@ class Blueprint {
     _images: Dictionary<FacingDirection, Dictionary<number, Image[]>>
     _defaultFacing: FacingDirection
     _defaultAction: number
+    _animateWhenIdle: boolean
     _dataBank: DataBank
     _aiUpdate: (obj: GameObject) => void
 
@@ -14,12 +15,21 @@ class Blueprint {
         this._kind = bpKind
         this._defaultFacing = FacingDirection.Down
         this._defaultAction = 0
+        this._animateWhenIdle = false
         this._images = new Dictionary<FacingDirection, Dictionary<number, Image[]>>()
         this._images.setItem(FacingDirection.Left, new Dictionary<number, Image[]>())
         this._images.setItem(FacingDirection.Up, new Dictionary<number, Image[]>())
         this._images.setItem(FacingDirection.Right, new Dictionary<number, Image[]>())
         this._images.setItem(FacingDirection.Down, new Dictionary<number, Image[]>())
         this._dataBank = new DataBank()
+        this._dataBank.data.setItem(InitialDataName.Life, 3)
+        this._dataBank.data.setItem(InitialDataName.Damage, 0)
+        this._dataBank.data.setItem(InitialDataName.Score, 0)
+        this._dataBank.data.setItem(InitialDataName.Speed, 100)
+        this._dataBank.data.setItem(InitialDataName.AnimateRate, 100)
+        this._dataBank.data.setItem(InitialDataName.DamageCooldown, 1000)
+        this._dataBank.data.setItem(InitialDataName.AttackCooldown, 0)
+        this._dataBank.data.setItem(InitialDataName.AttackDuration, 1000)
     }
 
 
@@ -45,6 +55,13 @@ class Blueprint {
     //% value.shadow="actionName_enum_shim"
     setDefaultAction(value: number): void { this._defaultAction = value }
 
+    //% block="get %blueprint(myBlueprint) animate when idle" group="Modify"
+    getAnimateWhenIdle(): boolean { return this._animateWhenIdle }
+    //% block="set %blueprint(myBlueprint) animate when idle to %value"
+    //% group="Modify"
+    //% value.defl="false"
+    setAnimateWhenIdle(value: boolean): void { this._animateWhenIdle = value }
+
     //% block="get %blueprint(myBlueprint) DataBank" group="Modify"
     getDataBank(): DataBank { return this._dataBank }
 
@@ -54,11 +71,12 @@ class Blueprint {
         if (this._images.getItem(facing).contains(action)) {
             return this._images.getItem(facing).getItem(action)
         } else {
-            if (this._images.getItem(this._defaultFacing).contains(action)) {
+            return this._images.getItem(facing).getItem(this._defaultAction)
+            /*if (this._images.getItem(this._defaultFacing).contains(action)) {
                 return this._images.getItem(this._defaultFacing).getItem(action)
             } else {
                 return this._images.getItem(this._defaultFacing).getItem(this._defaultAction)
-            }
+            }*/
         }
     }
 

@@ -8,11 +8,13 @@ class GameObject {
     _facing: FacingDirection
     _wasFacing: FacingDirection
     _action: number
+    _lastAction: number
     _dataBank: DataBank
     _isMoving: boolean
     _initialized: boolean
-    _animateIfStill: boolean
+    _animateWhenIdle: boolean
     _autoWalk: boolean
+    _actionChanged: boolean
 
     constructor(fromBlueprint: Blueprint) {
         this._id = fromBlueprint.getName()
@@ -20,10 +22,13 @@ class GameObject {
         this._sprite = sprites.create(this._blueprint.getDefaultImage(), this._blueprint.getKind())
         this._facing = fromBlueprint.getDefaultFacing()
         this._action = fromBlueprint.getDefaultAction()
+        this._lastAction = this._action
         this._dataBank = fromBlueprint.getDataBank().clone()
+        this._animateWhenIdle = fromBlueprint.getAnimateWhenIdle()
         this._isMoving = false
         this._initialized = false
         this._autoWalk = true
+        this._actionChanged = true
     }
 
     //% block="get %gameobject(myGameObject) id" group="Modify"
@@ -51,17 +56,23 @@ class GameObject {
     //% block="get %gameobject(myGameObject) action" group="Modify"
     getAction(): number { return this._action }
     //% block="set %gameobject(myGameObject) action to %value=actionName_enum_shim" group="Modify"
-    setAction(value: number): void { this._action = value }
+    setAction(value: number): void { 
+        this._lastAction = this._action
+        this._action = value 
+        this._actionChanged = true
+    }
 
-    //% block="get %gameobject(myGameObject) animate if still" group="Modify"
-    getAnimateIfStill(): boolean { return this._animateIfStill }
-    //% block="set %gameobject(myGameObject) animate if still to $value" group="Modify"
-    setAnimateIfStill(value: boolean): void { this._animateIfStill = true }
+    //% block="get %gameobject(myGameObject) animate when idle" group="Modify"
+    getAnimateWhenIdle(): boolean { return this._animateWhenIdle }
+    //% block="set %gameobject(myGameObject) animate when idle to $value" group="Modify"
+    //% value.defl="false"
+    setAnimateWhenIdle(value: boolean): void { this._animateWhenIdle = value }
 
     //% block="get %gameobject(myGameObject) auto walk" group="Modify"
-    getAutoWalk(): boolean { return this._animateIfStill }
+    getAutoWalk(): boolean { return this._autoWalk }
     //% block="set %gameobject(myGameObject) auto walk to $value" group="Modify"
-    setAutoWalk(value: boolean): void { this._animateIfStill = true }
+    //% value.defl="true"
+    setAutoWalk(value: boolean): void { this._autoWalk = value }
 
     //% block="get %gameobject(myGameObject) data value named %dataName=dataName_enum_shim"
     //% group="Data"
@@ -119,7 +130,8 @@ class GameObject {
                 if (isNaN(coolDown)) { coolDown = 0 }
                 this._dataBank.data.setItem(InitialDataName.AttackCooldown, coolDown)
             } else if (this._action == InitialActionName.Attack) {
-                this._action = InitialActionName.None
+                this._dataBank.data.setItem(InitialDataName.AttackCooldown, 0)
+                this.setAction(InitialActionName.None)
             }
         }
     }
@@ -140,24 +152,42 @@ class GameObject {
             this._facing = FacingDirection.Down
             this._isMoving = true
         }
-        if (this._autoWalk) {
-            if (this._isMoving) {
-                this._action = InitialActionName.Walk
-            } else { this._action = InitialActionName.None }
-        }
+    }
 
-        if (this._animateIfStill || this._isMoving) {
-            if (!this._animation || (this._wasFacing != this._facing)) {
+    updateAnimation(): void {
+        const attackAnimated = this._blueprint._images.getItem(this._facing).contains(InitialActionName.Attack)
+        const isAttacking = (this._action == InitialActionName.Attack && attackAnimated)
+        let doStop = false;
+
+        if (this._autoWalk && !isAttacking) {
+            if (this._isMoving) {
+                if (this._action != InitialActionName.Walk) { this.setAction(InitialActionName.Walk) }
+            } else {
+                if (this._action != InitialActionName.None) { this.setAction(InitialActionName.None) }
+            }
+        }
+        if (this._animateWhenIdle || this._isMoving || isAttacking) {
+            let b1 = (this._lastAction == InitialActionName.Attack)
+            if (!this._animation || (this._wasFacing != this._facing) || (this._actionChanged && attackAnimated)) {
                 if (this._animation) { animation.stopAnimation(animation.AnimationTypes.ImageAnimation, this._sprite) }
-                this._animation = new animation.ImageAnimation(this._sprite, this._blueprint.getImages(this._facing, this._action), this.getDataValue(InitialDataName.Speed), true);
+                const frames = this._blueprint.getImages(this._facing, this._action)
+                const spd = this.getDataValue(InitialDataName.Speed)
+                const rate = this.getDataValue(InitialDataName.AnimateRate)
+                let frameint = ((1 / frames.length) * 1000) * (rate / spd)
+                this._animation = new animation.ImageAnimation(this._sprite, frames, frameint, true);
                 this._animation.init();
+            } else if (attackAnimated && b1 && (this._action == InitialActionName.Walk)) {
+                doStop = true
             }
         } else {
-            if (this._animation) {
-                animation.stopAnimation(animation.AnimationTypes.ImageAnimation, this._sprite)
-                this._animation = null
-            }
+            if (this._animation) { doStop = true }
         }
+        if (doStop) {
+            animation.stopAnimation(animation.AnimationTypes.ImageAnimation, this._sprite)
+            this._sprite.setImage(this._blueprint.getImages(this._facing, this._action)[0])
+            this._animation = null
+        }
+        this._actionChanged = false
     }
 }
 
@@ -229,6 +259,9 @@ namespace gameObjects {
                 g.updateFacing()
                 // Update AI if any
                 if (g.getBlueprint()._aiUpdate) g.getBlueprint()._aiUpdate(g)
+                // Update animation and action
+                g.updateAnimation()
+                // Flag as initialized on first pass
                 if (!g._initialized) { g._initialized = true }
             })
         }
