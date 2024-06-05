@@ -1,6 +1,8 @@
 //% blockNamespace="blueprints"
 //% block
 class Blueprint {
+    
+    
     _name: string
     _kind: number
     _images: Dictionary<FacingDirection, Dictionary<number, Image[]>>
@@ -22,16 +24,15 @@ class Blueprint {
         this._images.setItem(FacingDirection.Right, new Dictionary<number, Image[]>())
         this._images.setItem(FacingDirection.Down, new Dictionary<number, Image[]>())
         this._dataBank = new DataBank()
-        this._dataBank.data.setItem(InitialDataName.Life, 3)
-        this._dataBank.data.setItem(InitialDataName.Damage, 0)
-        this._dataBank.data.setItem(InitialDataName.Score, 0)
-        this._dataBank.data.setItem(InitialDataName.Speed, 100)
-        this._dataBank.data.setItem(InitialDataName.AnimateRate, 100)
-        this._dataBank.data.setItem(InitialDataName.DamageCooldown, 1000)
-        this._dataBank.data.setItem(InitialDataName.AttackCooldown, 0)
-        this._dataBank.data.setItem(InitialDataName.AttackDuration, 1000)
+        this._dataBank.data.setItem(DataKind.Life, 3)
+        this._dataBank.data.setItem(DataKind.Damage, 0)
+        this._dataBank.data.setItem(DataKind.Score, 0)
+        this._dataBank.data.setItem(DataKind.Speed, 100)
+        this._dataBank.data.setItem(DataKind.AnimateRate, 50)
+        this._dataBank.data.setItem(DataKind.DamageCooldown, 1000)
+        this._dataBank.data.setItem(DataKind.AttackCooldown, 0)
+        this._dataBank.data.setItem(DataKind.AttackDuration, 300)
     }
-
 
     //% block="get %blueprint(myBlueprint) name" group="Modify"
     getName(): string { return this._name }
@@ -50,9 +51,9 @@ class Blueprint {
 
     //% block="get %blueprint(myBlueprint) default action" group="Modify"
     getDefaultAction(): number { return this._defaultAction }
-    //% block="set %blueprint(myBlueprint) default action to %value=actionName_enum_shim"
+    //% block="set %blueprint(myBlueprint) default action to %value=actionkind"
     //% group="Modify"
-    //% value.shadow="actionName_enum_shim"
+    //% value.shadow="actionkind"
     setDefaultAction(value: number): void { this._defaultAction = value }
 
     //% block="get %blueprint(myBlueprint) animate when idle" group="Modify"
@@ -65,24 +66,23 @@ class Blueprint {
     //% block="get %blueprint(myBlueprint) DataBank" group="Modify"
     getDataBank(): DataBank { return this._dataBank }
 
-    //% block="get %blueprint(myBlueprint) action animation|facing $facing|doing %action=actionName_enum_shim"
+    //% block="get %blueprint(myBlueprint) action animation|facing $facing|doing %action=actionkind"
     //% group="Modify"
     getImages(facing: FacingDirection, action: number): Image[] {
         if (this._images.getItem(facing).contains(action)) {
             return this._images.getItem(facing).getItem(action)
         } else {
-            return this._images.getItem(facing).getItem(this._defaultAction)
-            /*if (this._images.getItem(this._defaultFacing).contains(action)) {
-                return this._images.getItem(this._defaultFacing).getItem(action)
+            if (this._images.getItem(facing).contains(this._defaultAction)) {
+                return this._images.getItem(facing).getItem(this._defaultAction)
             } else {
                 return this._images.getItem(this._defaultFacing).getItem(this._defaultAction)
-            }*/
+            }
         }
     }
 
-    //% block="set %blueprint(myBlueprint) action animation|facing $facing|doing %action=actionName_enum_shim|to %value=animation_editor"
+    //% block="set %blueprint(myBlueprint) action animation|facing $facing|doing %action=actionkind|to %value=animation_editor"
     //% group="Modify"
-    //% action.shadow="actionName_enum_shim"
+    //% action.shadow="actionkind"
     //% value.shadow="animation_editor"
     setImages(facing: FacingDirection, action: number, value: Image[]): void {
         this._images.getItem(facing).setItem(action, value)
@@ -94,42 +94,42 @@ class Blueprint {
         return image.create(16, 16)
     }
 
-    //% block="get %blueprint(myBlueprint) data value named %dataName=dataName_enum_shim"
+    //% block="get %blueprint(myBlueprint) data value named %dataName=datakind"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     getDataValue(dataName: number): number {
         if (this._dataBank.data.contains(dataName)) { return this._dataBank.data.getItem(dataName) }
         return 0
     }
-    //% block="set %blueprint(myBlueprint) data value named %dataName=dataName_enum_shim to $value"
+    //% block="set %blueprint(myBlueprint) data value named %dataName=datakind to $value"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     setDataValue(dataName: number, value: number): void {
         this._dataBank.data.setItem(dataName, value)
     }
-    //% block="get %blueprint(myBlueprint) text value named %dataName=dataName_enum_shim"
+    //% block="get %blueprint(myBlueprint) text value named %dataName=datakind"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     getTextValue(dataName: number): string {
         if (this._dataBank.text.contains(dataName)) { return this._dataBank.text.getItem(dataName) }
         return ""
     }
-    //% block="set %blueprint(myBlueprint) text value named %dataName=dataName_enum_shim to $value"
+    //% block="set %blueprint(myBlueprint) text value named %dataName=datakind to $value"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     setTextValue(dataName: number, value: string): void {
         this._dataBank.text.setItem(dataName, value)
     }
-    //% block="get %blueprint(myBlueprint) flag value named %dataName=dataName_enum_shim"
+    //% block="get %blueprint(myBlueprint) flag value named %dataName=datakind"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     getFlagValue(dataName: number): boolean {
         if (this._dataBank.flag.contains(dataName)) { return this._dataBank.flag.getItem(dataName) }
         return false
     }
-    //% block="set %blueprint(myBlueprint) flag value named %dataName=dataName_enum_shim to $value"
+    //% block="set %blueprint(myBlueprint) flag value named %dataName=datakind to $value"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     setFlagValue(dataName: number, value: boolean): void {
         this._dataBank.flag.setItem(dataName, value)
     }
@@ -139,9 +139,11 @@ class Blueprint {
 //% color="#499DD8" weight=210 icon="\uf0c0" block="Blueprints"
 //% groups='["Access","Modify","Data"]'
 namespace blueprints {
-
+    const _BlankBlueprint: Blueprint = new Blueprint("blank", SpriteKind.create())
     const _blueprints: Dictionary<string, Blueprint> = new Dictionary<string, Blueprint>()
 
+    export function blankBlueprint(): Blueprint { return _BlankBlueprint }
+    
     //% block="create blueprint named $name of kind %kind=spritekind"
     //% group="Access"
     //% kind.shadow="spritekind"

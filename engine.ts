@@ -65,6 +65,7 @@ namespace engine {
     //% group="Named Value"
     export function getFacing(value: FacingDirection): FacingDirection { return value }
 
+/*
     //% shim=ENUM_GET
     //% blockId=actionName_enum_shim
     //% block="$arg" group="Named Value"
@@ -86,6 +87,27 @@ namespace engine {
     export function _dataNameEnumShim(arg: number) {
         return arg;
     }
+*/
+
+    /**
+     * Gets the "kind" of action
+     */
+    //% shim=KIND_GET
+    //% blockId=actionkind block="$kind"
+    //% kindNamespace=ActionKind kindMemberName=kind kindPromptHint="e.g. None, Walk, Attack..."
+    export function _actionKind(kind: number): number {
+        return kind;
+    }
+
+    /**
+         * Gets the "kind" of data
+         */
+    //% shim=KIND_GET
+    //% blockId=datakind block="$kind"
+    //% kindNamespace=DataKind kindMemberName=kind kindPromptHint="e.g. None, Walk, Attack..."
+    export function _dataKind(kind: number): number {
+        return kind;
+    }
 }
 
 game.onUpdate(() => {
@@ -94,10 +116,60 @@ game.onUpdate(() => {
     engine.updateDestroyQueue()
 })
 
+/*
 enum InitialActionName {
     None, Walk, Run, Attack, Damage, Death
 }
 
 enum InitialDataName {
     Life, Damage, Score, Speed, AnimateRate, DamageCooldown, AttackCooldown, AttackDuration
+}
+*/
+
+namespace ActionKind {
+    let nextKind: number;
+
+    export function create() {
+        if (nextKind === undefined) nextKind = 1000;
+        return nextKind++;
+    }
+
+    //% isKind
+    export const None = create();
+    //% isKind
+    export const Walk = create();
+    //% isKind
+    export const Run = create();
+    //% isKind
+    export const Attack = create();
+    //% isKind
+    export const Damage = create();
+    //% isKind
+    export const Death = create();
+}
+
+namespace DataKind {
+    let nextKind: number;
+
+    export function create() {
+        if (nextKind === undefined) nextKind = 1000;
+        return nextKind++;
+    }
+
+    //% isKind
+    export const Life = create();
+    //% isKind
+    export const Damage = create();
+    //% isKind
+    export const Score = create();
+    //% isKind
+    export const Speed = create();
+    //% isKind
+    export const AnimateRate = create();
+    //% isKind
+    export const DamageCooldown = create();
+    //% isKind
+    export const AttackCooldown = create();
+    //% isKind
+    export const AttackDuration = create();
 }

@@ -55,7 +55,7 @@ class GameObject {
 
     //% block="get %gameobject(myGameObject) action" group="Modify"
     getAction(): number { return this._action }
-    //% block="set %gameobject(myGameObject) action to %value=actionName_enum_shim" group="Modify"
+    //% block="set %gameobject(myGameObject) action to %value=actionkind" group="Modify"
     setAction(value: number): void { 
         this._lastAction = this._action
         this._action = value 
@@ -74,64 +74,64 @@ class GameObject {
     //% value.defl="true"
     setAutoWalk(value: boolean): void { this._autoWalk = value }
 
-    //% block="get %gameobject(myGameObject) data value named %dataName=dataName_enum_shim"
+    //% block="get %gameobject(myGameObject) data value named %dataName=datakind"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     getDataValue(dataName: number): number {
         if (this._dataBank.data.contains(dataName)) { return this._dataBank.data.getItem(dataName) }
         return 0
     }
-    //% block="set %gameobject(myGameObject) data value named %dataName=dataName_enum_shim to $value"
+    //% block="set %gameobject(myGameObject) data value named %dataName=datakind to $value"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     setDataValue(dataName: number, value: number): void {
         this._dataBank.data.setItem(dataName, value)
     }
-    //% block="get %gameobject(myGameObject) text value named %dataName=dataName_enum_shim"
+    //% block="get %gameobject(myGameObject) text value named %dataName=datakind"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     getTextValue(dataName: number): string {
         if (this._dataBank.text.contains(dataName)) { return this._dataBank.text.getItem(dataName) }
         return ""
     }
-    //% block="set %gameobject(myGameObject) text value named %dataName=dataName_enum_shim to $value"
+    //% block="set %gameobject(myGameObject) text value named %dataName=datakind to $value"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     setTextValue(dataName: number, value: string): void {
         this._dataBank.text.setItem(dataName, value)
     }
-    //% block="get %gameobject(myGameObject) flag value named %dataName=dataName_enum_shim"
+    //% block="get %gameobject(myGameObject) flag value named %dataName=datakind"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     getFlagValue(dataName: number): boolean {
         if (this._dataBank.flag.contains(dataName)) { return this._dataBank.flag.getItem(dataName) }
         return false
     }
-    //% block="set %gameobject(myGameObject) flag value named %dataName=dataName_enum_shim to $value"
+    //% block="set %gameobject(myGameObject) flag value named %dataName=datakind to $value"
     //% group="Data"
-    //% dataName.shadow=dataName_enum_shim
+    //% dataName.shadow=datakind
     setFlagValue(dataName: number, value: boolean): void {
         this._dataBank.flag.setItem(dataName, value)
     }
 
     updateCooldowns(): void {
-        if (this._dataBank.data.contains(InitialDataName.DamageCooldown)) {
-            let coolDown: number = this._dataBank.data.getItem(InitialDataName.DamageCooldown)
+        if (this._dataBank.data.contains(DataKind.DamageCooldown)) {
+            let coolDown: number = this._dataBank.data.getItem(DataKind.DamageCooldown)
             if (coolDown > 0) {
                 coolDown = coolDown - engine.frameTime()
                 if (isNaN(coolDown)) { coolDown = 0 }
-                this._dataBank.data.setItem(InitialDataName.DamageCooldown, coolDown)
+                this._dataBank.data.setItem(DataKind.DamageCooldown, coolDown)
             }
         }
-        if (this._dataBank.data.contains(InitialDataName.AttackCooldown)) {
-            let coolDown: number = this._dataBank.data.getItem(InitialDataName.AttackCooldown)
+        if (this._dataBank.data.contains(DataKind.AttackCooldown)) {
+            let coolDown: number = this._dataBank.data.getItem(DataKind.AttackCooldown)
             if (coolDown > 0) {
                 coolDown = coolDown - engine.frameTime()
                 if (isNaN(coolDown)) { coolDown = 0 }
-                this._dataBank.data.setItem(InitialDataName.AttackCooldown, coolDown)
-            } else if (this._action == InitialActionName.Attack) {
-                this._dataBank.data.setItem(InitialDataName.AttackCooldown, 0)
-                this.setAction(InitialActionName.None)
+                this._dataBank.data.setItem(DataKind.AttackCooldown, coolDown)
+            } else if (this._action == ActionKind.Attack) {
+                this._dataBank.data.setItem(DataKind.AttackCooldown, 0)
+                this.setAction(ActionKind.None)
             }
         }
     }
@@ -155,28 +155,28 @@ class GameObject {
     }
 
     updateAnimation(): void {
-        const attackAnimated = this._blueprint._images.getItem(this._facing).contains(InitialActionName.Attack)
-        const isAttacking = (this._action == InitialActionName.Attack && attackAnimated)
+        const attackAnimated = this._blueprint._images.getItem(this._facing).contains(ActionKind.Attack)
+        const isAttacking = (this._action == ActionKind.Attack && attackAnimated)
         let doStop = false;
 
         if (this._autoWalk && !isAttacking) {
             if (this._isMoving) {
-                if (this._action != InitialActionName.Walk) { this.setAction(InitialActionName.Walk) }
+                if (this._action != ActionKind.Walk) { this.setAction(ActionKind.Walk) }
             } else {
-                if (this._action != InitialActionName.None) { this.setAction(InitialActionName.None) }
+                if (this._action != ActionKind.None) { this.setAction(ActionKind.None) }
             }
         }
         if (this._animateWhenIdle || this._isMoving || isAttacking) {
-            let b1 = (this._lastAction == InitialActionName.Attack)
+            let b1 = (this._lastAction == ActionKind.Attack)
             if (!this._animation || (this._wasFacing != this._facing) || (this._actionChanged && attackAnimated)) {
                 if (this._animation) { animation.stopAnimation(animation.AnimationTypes.ImageAnimation, this._sprite) }
                 const frames = this._blueprint.getImages(this._facing, this._action)
-                const spd = this.getDataValue(InitialDataName.Speed)
-                const rate = this.getDataValue(InitialDataName.AnimateRate)
+                const spd = this.getDataValue(DataKind.Speed)
+                const rate = this.getDataValue(DataKind.AnimateRate)
                 let frameint = ((1 / frames.length) * 1000) * (rate / spd)
                 this._animation = new animation.ImageAnimation(this._sprite, frames, frameint, true);
                 this._animation.init();
-            } else if (attackAnimated && b1 && (this._action == InitialActionName.Walk)) {
+            } else if (attackAnimated && b1 && (this._action == ActionKind.Walk)) {
                 doStop = true
             }
         } else {
@@ -197,7 +197,7 @@ class GameObject {
 //% color="#FF823F" weight=200 icon="\uf29a" block="GameObjects"
 //% groups='["Access","Modify","Data","Logic"]'
 namespace gameObjects {
-    //let _aiUpdate: (obj: GameObject) => void
+    //const emptyObject: GameObject = new GameObject(blueprints.blankBlueprint())
 
     //% block="create game object from $blueprint=variables_get(myBlueprint)"
     //% group="Access"
@@ -207,7 +207,7 @@ namespace gameObjects {
             engine.addGameObject(result)
             return result
         }
-        return null
+        return null //emptyObject
     }
 
     //% block="create game object from $blueprint=variables_get(myBlueprint)"
@@ -228,11 +228,11 @@ namespace gameObjects {
     //% block="$source=variables_get(myGameObject) apply damage to $target=variables_get(myGameObject)"
     //% group="Logic"
     export function applyDamage(source: GameObject, target: GameObject): boolean {
-        if (target.getDataValue(InitialDataName.DamageCooldown) <= 0) {
-            let dmg: number = source.getDataValue(InitialDataName.Damage)
-            let life: number = target.getDataValue(InitialDataName.Life)
-            target.setDataValue(InitialDataName.Life, life - dmg)
-            target.setDataValue(InitialDataName.DamageCooldown, target._blueprint.getDataValue(InitialDataName.DamageCooldown))
+        if (target.getDataValue(DataKind.DamageCooldown) <= 0) {
+            let dmg: number = source.getDataValue(DataKind.Damage)
+            let life: number = target.getDataValue(DataKind.Life)
+            target.setDataValue(DataKind.Life, life - dmg)
+            target.setDataValue(DataKind.DamageCooldown, target._blueprint.getDataValue(DataKind.DamageCooldown))
             return true
         }
         return false
@@ -240,13 +240,13 @@ namespace gameObjects {
 
     //% block="if $source=variables_get(myGameObject) can attack" group="Logic"
     export function canAttack(source: GameObject): boolean {
-        return (source.getDataValue(InitialDataName.AttackCooldown) <= 0)
+        return (source.getDataValue(DataKind.AttackCooldown) <= 0)
     }
 
     //%block="$source=variables_get(myGameObject) perform attack"
     export function performAttack(source: GameObject): void {
-        source.setAction(InitialActionName.Attack)
-        source.setDataValue(InitialDataName.AttackCooldown, source._blueprint.getDataValue(InitialDataName.AttackCooldown))
+        source.setAction(ActionKind.Attack)
+        source.setDataValue(DataKind.AttackCooldown, source._blueprint.getDataValue(DataKind.AttackCooldown))
     }
 
     export function doUpdate() {
