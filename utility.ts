@@ -6,6 +6,10 @@ class Dictionary<tKey, tValue> {
     protected _values: Array<tValue>
 
     constructor() {
+        this.clear()
+    }
+
+    clear(): void {
         this._keys = []
         this._values = []
     }
@@ -27,6 +31,17 @@ class Dictionary<tKey, tValue> {
     count(): number {
         return this._keys.length
     }
+    forEachKey(action: (item: tKey) => void): void {
+        this._keys.forEach((_item: tKey) => {
+            action(_item)
+        })
+    }
+    forEachValue(action: (item: tValue) => void): void {
+        this._values.forEach((_item: tValue) => {
+            action(_item)
+        })
+    }
+
     getItem(key: tKey): tValue {
         const idx = this._keys.indexOf(key)
         if (idx > -1) { return this._values[idx] }
@@ -150,5 +165,57 @@ namespace images {
             target.print(line, dx, dy, c, f)
             dy += f.charHeight
         })
+    }
+}
+
+class ControllerState {
+    _buttonState: Dictionary<number, boolean> = new Dictionary<number, boolean>()
+    _wasPressed: Dictionary<number, boolean> = new Dictionary<number, boolean>()
+
+    constructor() {}
+
+    update(): void {
+        this._wasPressed.forEachKey((key: number) => {
+            this._wasPressed.setItem(key, false)
+        })
+        for(let i=0; i<7; i++){
+            const pressed: boolean = controller.isButtonPressed(i)
+            if (pressed) {
+                if (!this._buttonState.getItem(i)) {
+                    this._buttonState.setItem(i, pressed)
+                }                 
+            } else {
+                if (this._buttonState.getItem(i)) {
+                    this._wasPressed.setItem(i, true)
+                    this._buttonState.setItem(i, pressed)
+                }
+            }
+        }
+    }
+
+    wasPressed(button: number): boolean {
+        return this._wasPressed.getItem(button)
+    }
+}
+
+namespace controller {
+    export const _controllerState: ControllerState = new ControllerState()
+    
+    export function isButtonPressed(button: number): boolean {
+        switch (button) {
+            case 0: return controller.menu.isPressed()
+            case 1: return controller.left.isPressed()
+            case 2: return controller.up.isPressed()
+            case 3: return controller.right.isPressed()
+            case 4: return controller.down.isPressed()
+            case 5: return controller.A.isPressed()
+            case 6: return controller.B.isPressed()
+        }
+        return false
+    }
+    //% block="was %button **button** pressed"
+    //% group="Single Player"
+    export function wasButtonPressed(button: ControllerButton): boolean {
+        return _controllerState.wasPressed(button)
     }
 }

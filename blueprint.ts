@@ -1,8 +1,7 @@
 //% blockNamespace="blueprints"
 //% block
 class Blueprint {
-    
-    
+        
     _name: string
     _kind: number
     _images: Dictionary<FacingDirection, Dictionary<number, Image[]>>
@@ -66,7 +65,7 @@ class Blueprint {
     //% block="get %blueprint(myBlueprint) DataBank" group="Modify"
     getDataBank(): DataBank { return this._dataBank }
 
-    //% block="get %blueprint(myBlueprint) action animation|facing $facing|doing %action=actionkind"
+    //% block="get %blueprint(myBlueprint) animation|facing $facing|doing %action=actionkind"
     //% group="Modify"
     getImages(facing: FacingDirection, action: number): Image[] {
         if (this._images.getItem(facing).contains(action)) {
@@ -80,7 +79,7 @@ class Blueprint {
         }
     }
 
-    //% block="set %blueprint(myBlueprint) action animation|facing $facing|doing %action=actionkind|to %value=animation_editor"
+    //% block="set %blueprint(myBlueprint) animation|facing $facing|doing %action=actionkind|to %value=animation_editor"
     //% group="Modify"
     //% action.shadow="actionkind"
     //% value.shadow="animation_editor"
@@ -94,40 +93,40 @@ class Blueprint {
         return image.create(16, 16)
     }
 
-    //% block="get %blueprint(myBlueprint) data value named %dataName=datakind"
+    //% block="get %blueprint(myBlueprint) data %dataName=datakind"
     //% group="Data"
     //% dataName.shadow=datakind
     getDataValue(dataName: number): number {
         if (this._dataBank.data.contains(dataName)) { return this._dataBank.data.getItem(dataName) }
         return 0
     }
-    //% block="set %blueprint(myBlueprint) data value named %dataName=datakind to $value"
+    //% block="set %blueprint(myBlueprint) data %dataName=datakind to $value"
     //% group="Data"
     //% dataName.shadow=datakind
     setDataValue(dataName: number, value: number): void {
         this._dataBank.data.setItem(dataName, value)
     }
-    //% block="get %blueprint(myBlueprint) text value named %dataName=datakind"
+    //% block="get %blueprint(myBlueprint) text %dataName=datakind"
     //% group="Data"
     //% dataName.shadow=datakind
     getTextValue(dataName: number): string {
         if (this._dataBank.text.contains(dataName)) { return this._dataBank.text.getItem(dataName) }
         return ""
     }
-    //% block="set %blueprint(myBlueprint) text value named %dataName=datakind to $value"
+    //% block="set %blueprint(myBlueprint) text %dataName=datakind to $value"
     //% group="Data"
     //% dataName.shadow=datakind
     setTextValue(dataName: number, value: string): void {
         this._dataBank.text.setItem(dataName, value)
     }
-    //% block="get %blueprint(myBlueprint) flag value named %dataName=datakind"
+    //% block="get %blueprint(myBlueprint) flag %dataName=datakind"
     //% group="Data"
     //% dataName.shadow=datakind
     getFlagValue(dataName: number): boolean {
         if (this._dataBank.flag.contains(dataName)) { return this._dataBank.flag.getItem(dataName) }
         return false
     }
-    //% block="set %blueprint(myBlueprint) flag value named %dataName=datakind to $value"
+    //% block="set %blueprint(myBlueprint) flag %dataName=datakind to $value"
     //% group="Data"
     //% dataName.shadow=datakind
     setFlagValue(dataName: number, value: boolean): void {
@@ -136,7 +135,7 @@ class Blueprint {
 }
 
 
-//% color="#499DD8" weight=210 icon="\uf0c0" block="Blueprints"
+//% color="#499DD8" weight=220 icon="\uf0c0" block="Blueprints"
 //% groups='["Access","Modify","Data"]'
 namespace blueprints {
     const _BlankBlueprint: Blueprint = new Blueprint("blank", SpriteKind.create())
@@ -166,6 +165,12 @@ namespace blueprints {
     export function getBlueprint(name: string): Blueprint {
         if (_blueprints.contains(name)) { return _blueprints.getItem(name) }
         return null //createBlueprintGeneric(name)
+    }
+
+    //% block="$source=variables_get(myBlueprint) is named $name"
+    //% group="Logic"
+    export function blockNameIs(source: Blueprint, name: string): boolean {
+        return (source._name == name)
     }
 
     //% draggableParameters="reporter"

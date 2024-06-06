@@ -2,13 +2,15 @@
 /**
  * Game processing
  **/
-//% color="#C44FFF" weight=200 icon="\uf1b9" block="Engine"
+//% color="#C44FFF" weight=230 icon="\uf1b9" block="Engine"
 //% groups='["Time","Access","Named Value"]'
 namespace engine {
 
-    const _gameObjects: GameObject[] = []
-    const _destroyQueue: GameObject[] = []
+    //const _gameObjects: GameObject[] = []
+    //const _destroyQueue: GameObject[] = []
 
+    const _screens: Dictionary<string, GameScreen> = new Dictionary<string, GameScreen>()
+    let _currentScreen: string
     let _timeLastUpdate: number
     let _lastFrameTime: number
 
@@ -18,6 +20,11 @@ namespace engine {
     }
 
     export function updateDestroyQueue() {
+        if (_screens.contains(_currentScreen)) {
+            const curScreen = _screens.getItem(_currentScreen)
+            curScreen.updateDestroyQueue()
+        }
+        /*
         while (_destroyQueue.length > 0) {
             let _item = _destroyQueue.pop()
             _gameObjects.removeElement(_item)
@@ -27,32 +34,81 @@ namespace engine {
                 _item._sprite = null;
             }
         }
+        */
+    }
+
+    export function getCurrentScreen(): string {
+        return _currentScreen
+    }
+    export function setCurrentScreen(name: string): void {
+        if (_currentScreen != name) {
+            if (_screens.contains(_currentScreen)) { _screens.getItem(_currentScreen).suspend() }
+            _currentScreen = name
+            _screens.getItem(_currentScreen).resume()
+        }
+    }
+    export function updateCurrentScreen(): void {
+        if (_screens.contains(_currentScreen)) {
+            const curScreen = _screens.getItem(_currentScreen)
+            if (curScreen._onGameUpdate) { curScreen._onGameUpdate() }
+        }
+    }
+
+    export function addGameScreen(value: GameScreen): void {
+        _screens.setItem(value._name, value)
+        //if (_currentScreen.isEmpty()) { _currentScreen = value._name }
+    }
+
+    export function getGameScreen(name: string): GameScreen {
+        if (_screens.contains(name)) { return _screens.getItem(name) }
+        return null
     }
 
     export function addGameObject(value: GameObject): void {
-        _gameObjects.push(value)
+        if (_screens.contains(_currentScreen)) {
+            const curScreen = _screens.getItem(_currentScreen)
+            curScreen._gameObjects.push(value)
+        }
+        
     }
 
     export function destroyGameObject(value: GameObject): void {
-        _destroyQueue.push(value)
+        if (_screens.contains(_currentScreen)) {
+            const curScreen = _screens.getItem(_currentScreen)
+            curScreen._destroyQueue.push(value)
+        }
     }
 
     //% block="get all game objects"
     //% group="Access"
-    export function getGameObjects(): GameObject[] { return _gameObjects }
+    export function getGameObjects(): GameObject[] { 
+        if (_screens.contains(_currentScreen)) {
+            const curScreen = _screens.getItem(_currentScreen)
+            return curScreen._gameObjects
+        }
+        return []
+    }
 
     //% block="get all game objects of $kind=spritekind"
     //% group="Access"
     export function _getGameObjects(kind: number): GameObject[] {
-        return _gameObjects.filter((value: GameObject) => {
-            return (value._blueprint.getKind() == kind)
-        })
+        if (_screens.contains(_currentScreen)) {
+            const curScreen = _screens.getItem(_currentScreen)
+            return curScreen._gameObjects.filter((value: GameObject) => {
+                return (value._blueprint.getKind() == kind)
+            })
+        }
+        return []
     }
 
     //% block="destroy all game objects"
     //% group="Access"
     export function destroyAllGameObjects(): void {
-        _gameObjects.forEach((item: GameObject) => { _destroyQueue.push(item) })
+        if (_screens.contains(_currentScreen)) {
+            const curScreen = _screens.getItem(_currentScreen)
+            curScreen._gameObjects.forEach((item: GameObject) => { curScreen._destroyQueue.push(item) })
+        }
+        
     }
 
     //% block="frame time"
@@ -93,7 +149,7 @@ namespace engine {
      * Gets the "kind" of action
      */
     //% shim=KIND_GET
-    //% blockId=actionkind block="$kind"
+    //% blockId=actionkind block="action $kind"
     //% kindNamespace=ActionKind kindMemberName=kind kindPromptHint="e.g. None, Walk, Attack..."
     export function _actionKind(kind: number): number {
         return kind;
@@ -103,15 +159,17 @@ namespace engine {
          * Gets the "kind" of data
          */
     //% shim=KIND_GET
-    //% blockId=datakind block="$kind"
-    //% kindNamespace=DataKind kindMemberName=kind kindPromptHint="e.g. None, Walk, Attack..."
+    //% blockId=datakind block="stat $kind"
+    //% kindNamespace=DataKind kindMemberName=kind kindPromptHint="e.g. Life, Speed, Damage..."
     export function _dataKind(kind: number): number {
         return kind;
     }
 }
 
 game.onUpdate(() => {
+    controller._controllerState.update()
     engine.updateGameTime()
+    engine.updateCurrentScreen()
     gameObjects.doUpdate()
     engine.updateDestroyQueue()
 })

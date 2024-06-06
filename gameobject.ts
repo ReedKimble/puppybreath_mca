@@ -74,40 +74,47 @@ class GameObject {
     //% value.defl="true"
     setAutoWalk(value: boolean): void { this._autoWalk = value }
 
-    //% block="get %gameobject(myGameObject) data value named %dataName=datakind"
+    //% block="get %gameobject(myGameObject) data %dataName=datakind"
     //% group="Data"
     //% dataName.shadow=datakind
     getDataValue(dataName: number): number {
         if (this._dataBank.data.contains(dataName)) { return this._dataBank.data.getItem(dataName) }
         return 0
     }
-    //% block="set %gameobject(myGameObject) data value named %dataName=datakind to $value"
+    //% block="set %gameobject(myGameObject) data %dataName=datakind to $value"
     //% group="Data"
     //% dataName.shadow=datakind
     setDataValue(dataName: number, value: number): void {
         this._dataBank.data.setItem(dataName, value)
     }
-    //% block="get %gameobject(myGameObject) text value named %dataName=datakind"
+    //% block="change %gameobject(myGameObject) data %dataName=datakind by $value"
+    //% group="Data"
+    //% dataName.shadow=datakind
+    changeDataValue(dataName: number, value: number): void {
+        const d = this._dataBank.data.getItem(dataName)
+        this._dataBank.data.setItem(dataName, (d + value))
+    }
+    //% block="get %gameobject(myGameObject) text %dataName=datakind"
     //% group="Data"
     //% dataName.shadow=datakind
     getTextValue(dataName: number): string {
         if (this._dataBank.text.contains(dataName)) { return this._dataBank.text.getItem(dataName) }
         return ""
     }
-    //% block="set %gameobject(myGameObject) text value named %dataName=datakind to $value"
+    //% block="set %gameobject(myGameObject) text %dataName=datakind to $value"
     //% group="Data"
     //% dataName.shadow=datakind
     setTextValue(dataName: number, value: string): void {
         this._dataBank.text.setItem(dataName, value)
     }
-    //% block="get %gameobject(myGameObject) flag value named %dataName=datakind"
+    //% block="get %gameobject(myGameObject) flag %dataName=datakind"
     //% group="Data"
     //% dataName.shadow=datakind
     getFlagValue(dataName: number): boolean {
         if (this._dataBank.flag.contains(dataName)) { return this._dataBank.flag.getItem(dataName) }
         return false
     }
-    //% block="set %gameobject(myGameObject) flag value named %dataName=datakind to $value"
+    //% block="set %gameobject(myGameObject) flag %dataName=datakind to $value"
     //% group="Data"
     //% dataName.shadow=datakind
     setFlagValue(dataName: number, value: boolean): void {
@@ -225,6 +232,12 @@ namespace gameObjects {
         engine.destroyGameObject(obj)
     }
 
+    //% block="$source=variables_get(myGameObject) blueprint is named $name"
+    //% group="Logic"
+    export function blockNameIs(source: GameObject, name: string): boolean {
+        return (source.getBlueprint().getName() == name)
+    }
+
     //% block="$source=variables_get(myGameObject) apply damage to $target=variables_get(myGameObject)"
     //% group="Logic"
     export function applyDamage(source: GameObject, target: GameObject): boolean {
@@ -238,7 +251,7 @@ namespace gameObjects {
         return false
     }
 
-    //% block="if $source=variables_get(myGameObject) can attack" group="Logic"
+    //% block="$source=variables_get(myGameObject) can attack" group="Logic"
     export function canAttack(source: GameObject): boolean {
         return (source.getDataValue(DataKind.AttackCooldown) <= 0)
     }
@@ -252,17 +265,17 @@ namespace gameObjects {
     export function doUpdate() {
         const g: GameObject[] = engine.getGameObjects()
         if (g) {
-            g.forEach((g: GameObject) => {
+            g.forEach((go: GameObject) => {
                 // Update damage and attack cooldowns
-                g.updateCooldowns()
+                go.updateCooldowns()
                 // Update facing direction based on velocity
-                g.updateFacing()
+                go.updateFacing()
                 // Update AI if any
-                if (g.getBlueprint()._aiUpdate) g.getBlueprint()._aiUpdate(g)
+                if (go.getBlueprint()._aiUpdate) go.getBlueprint()._aiUpdate(go)
                 // Update animation and action
-                g.updateAnimation()
+                go.updateAnimation()
                 // Flag as initialized on first pass
-                if (!g._initialized) { g._initialized = true }
+                if (!go._initialized) { go._initialized = true }
             })
         }
 

@@ -12,13 +12,14 @@
         "utility.ts",
         "engine.ts",
         "gameobject.ts",
-        "blueprint.ts"
+        "blueprint.ts",
+        "gamescene.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "targetVersions": {
-        "target": "1.12.51",
+        "target": "1.12.53",
         "targetId": "arcade"
     },
     "supportedTargets": [
