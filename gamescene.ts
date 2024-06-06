@@ -124,6 +124,15 @@ class GameScreen {
     }
 
     resume(): void {       
+        if (this._backgroundImage) {
+            this._backgroundSprite = sprites.create(this._backgroundImage, this._spriteKind)
+            this._backgroundSprite.z = -1
+        }
+        if (this._tilemap) { tiles.setCurrentTilemap(this._tilemap) }
+        if (!this._initialized) {
+            if (this._onLoad) { this._onLoad() }
+            this._initialized = true
+        }
         if (this._isSuspended) {
             this._gameObjects.forEach((item: GameObject) => {
                 let sd = this._suspendedSprites.getItem(item)
@@ -140,15 +149,7 @@ class GameScreen {
             this._initialized = true
         }
         this.playBackground()
-        if (this._backgroundImage) { 
-            this._backgroundSprite = sprites.create(this._backgroundImage, this._spriteKind) 
-            this._backgroundSprite.z = -1
-        }
-        if (this._tilemap) { tiles.setCurrentTilemap(this._tilemap) }
-        if (!this._initialized) {
-            if (this._onLoad) { this._onLoad() }
-            this._initialized = true
-        }
+        
         if (this._onShow) { this._onShow() }
     }
 }
