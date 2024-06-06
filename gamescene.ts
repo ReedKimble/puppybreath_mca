@@ -60,6 +60,7 @@ class GameScreen {
     //% group="Modify"
     getBackgroundImage(): Image { return this._backgroundImage }
     //% block="set %gamescreen(myScreen) background image to $value"
+    //% value.shadow=screen_image_picker
     //% group="Modify"
     setBackgroundImage(value: Image): void { this._backgroundImage = value }
 
