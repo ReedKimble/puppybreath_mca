@@ -269,7 +269,8 @@ namespace gameObjects {
         if (canAttack(source)) {
             source.setAction(ActionKind.Attack)
             source.setDataValue(DataKind.AttackCooldown, source._blueprint.getDataValue(DataKind.AttackCooldown))
-            source.setDataValue(DataKind.AttackDuration, source._blueprint.getDataValue(DataKind.AttackDuration))
+            const dur = source._blueprint.getDataValue(DataKind.AttackDuration) * (100 / source.getDataValue(DataKind.Speed))
+            source.setDataValue(DataKind.AttackDuration, dur)
         }
     }
 
