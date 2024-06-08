@@ -271,10 +271,15 @@ namespace gameObjects {
     //% block="$source=variables_get(myGameObject) apply damage to $target=variables_get(myGameObject)"
     //% group="Logic"
     export function applyDamage(source: GameObject, target: GameObject): boolean {
+        return applyDamageRaw(source.getDataValue(DataKind.Damage), target)
+    }
+
+    //% block="apply $damage to $target=variables_get(myGameObject)"
+    //% group="Logic"
+    export function applyDamageRaw(damage: number, target: GameObject): boolean {
         if (target.getDataValue(DataKind.DamageCooldown) <= 0) {
-            let dmg: number = source.getDataValue(DataKind.Damage)
-            let life: number = target.getDataValue(DataKind.Life)
-            target.setDataValue(DataKind.Life, life - dmg)
+            const life: number = target.getDataValue(DataKind.Life)
+            target.setDataValue(DataKind.Life, life - damage)
             target.setDataValue(DataKind.DamageCooldown, target._blueprint.getDataValue(DataKind.DamageCooldown))
             return true
         }
