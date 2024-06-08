@@ -167,11 +167,12 @@ namespace engine {
 }
 
 game.onUpdate(() => {
-    controller._controllerState.update()
+    
     engine.updateGameTime()
     engine.updateCurrentScreen()
     gameObjects.doUpdate()
     engine.updateDestroyQueue()
+    controller._controllerState.update()
 })
 
 /*

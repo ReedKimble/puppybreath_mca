@@ -171,26 +171,39 @@ namespace images {
 class ControllerState {
     _buttonState: Dictionary<number, boolean> = new Dictionary<number, boolean>()
     _wasPressed: Dictionary<number, boolean> = new Dictionary<number, boolean>()
+    _isInit: boolean = false
 
-    constructor() {}
+    constructor() {
+        this.addListeners(controller.left, 1)
+        this.addListeners(controller.up, 2)
+        this.addListeners(controller.right, 3)
+        this.addListeners(controller.down, 4)
+        this.addListeners(controller.A, 5)
+        this.addListeners(controller.B, 6)
+    }
+
+    private addListeners(b: controller.Button, id: number): void {
+        b.addEventListener(ControllerButtonEvent.Pressed, () => {
+            if (!this._buttonState.getItem(id)) {
+                this._buttonState.setItem(id, true)
+            }
+        })
+        b.addEventListener(ControllerButtonEvent.Released, () => {
+            if (this._buttonState.getItem(id)) {
+                this._wasPressed.setItem(id, true)
+                this._buttonState.setItem(id, false)
+            }
+        })
+    }
 
     update(): void {
+        if (!this._isInit) {
+            
+            this._isInit = true
+        }
         this._wasPressed.forEachKey((key: number) => {
             this._wasPressed.setItem(key, false)
         })
-        for(let i=0; i<7; i++){
-            const pressed: boolean = controller.isButtonPressed(i)
-            if (pressed) {
-                if (!this._buttonState.getItem(i)) {
-                    this._buttonState.setItem(i, pressed)
-                }                 
-            } else {
-                if (this._buttonState.getItem(i)) {
-                    this._wasPressed.setItem(i, true)
-                    this._buttonState.setItem(i, pressed)
-                }
-            }
-        }
     }
 
     wasPressed(button: number): boolean {

@@ -13,7 +13,8 @@
         "engine.ts",
         "gameobject.ts",
         "blueprint.ts",
-        "gamescene.ts"
+        "gamescene.ts",
+        "dialog.ts"
     ],
     "testFiles": [
         "test.ts"
