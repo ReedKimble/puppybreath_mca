@@ -9,7 +9,9 @@ class Blueprint {
     _defaultAction: number
     _animateWhenIdle: boolean
     _dataBank: DataBank
-    _aiUpdate: (obj: GameObject) => void
+    _onUpdate: (obj: GameObject) => void
+    _onLoad: (obj: GameObject) => void
+    _onDestroy: (obj: GameObject) => void
 
     constructor(bpName: string, bpKind: number) {
         this._name = bpName
@@ -75,6 +77,18 @@ class Blueprint {
                 return this._images.getItem(facing).getItem(this._defaultAction)
             } else {
                 return this._images.getItem(this._defaultFacing).getItem(this._defaultAction)
+            }
+        }
+    }
+
+    getFacingActionUsed(facing: FacingDirection, action: number): [FacingDirection, number] {
+        if (this._images.getItem(facing).contains(action)) {
+            return [facing, action]
+        } else {
+            if (this._images.getItem(facing).contains(this._defaultAction)) {
+                return [facing, this._defaultAction]
+            } else {
+                return [this._defaultFacing, this._defaultAction]
             }
         }
     }
@@ -177,6 +191,20 @@ namespace blueprints {
     //% block="on $blueprint=variables_get(myBlueprint) update of $obj=variables_get(myGameObject)" group="Modify"
     //% handlerStatement
     export function onUpdate(blueprint: Blueprint, value: (obj: GameObject) => void): void {
-        blueprint._aiUpdate = value
+        blueprint._onUpdate = value
+    }
+
+    //% draggableParameters="reporter"
+    //% block="on $blueprint=variables_get(myBlueprint) load of $obj=variables_get(myGameObject)" group="Modify"
+    //% handlerStatement
+    export function onLoad(blueprint: Blueprint, value: (obj: GameObject) => void): void {
+        blueprint._onLoad = value
+    }
+
+    //% draggableParameters="reporter"
+    //% block="on $blueprint=variables_get(myBlueprint) destroy of $obj=variables_get(myGameObject)" group="Modify"
+    //% handlerStatement
+    export function onDestroy(blueprint: Blueprint, value: (obj: GameObject) => void): void {
+        blueprint._onDestroy = value
     }
 }

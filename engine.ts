@@ -3,7 +3,7 @@
  * Game processing
  **/
 //% color="#C44FFF" weight=230 icon="\uf1b9" block="Engine"
-//% groups='["Time","Access","Named Value"]'
+//% groups='["Time","Access","Dictionary","Named Value"]'
 namespace engine {
 
     //const _gameObjects: GameObject[] = []
@@ -121,6 +121,41 @@ namespace engine {
     //% group="Named Value"
     export function getFacing(value: FacingDirection): FacingDirection { return value }
 
+    //% block="create new dictionary"
+    //% group="Dictonary"
+    export function createDictionary(): Dictionary<string, any> {
+        return new Dictionary<string, any>()
+    }
+
+    //% block="$dict contains key $key"
+    //% group="Dictonary"
+    export function dictionaryContains(dict: Dictionary<string, any>, key: string): boolean {
+        return dict.contains(key)
+    }
+
+    //% block="get value from $dict with key $key"
+    //% group="Dictonary"
+    export function dictionaryItem(dict: Dictionary<string, any>, key: string): any {
+        if (dict.contains(key)) { return dict.getItem(key) }
+        return null
+    }
+
+    //% block="set key $key in $dict to $value"
+    //% group="Dictonary"
+    export function setDictionaryItem(dict: Dictionary<string, any>, key: string, value: any): void {
+        dict.setItem(key, value)
+    }
+
+    //% block="change key $key in $dict by $value"
+    //% group="Dictonary"
+    export function changeDictionaryItem(dict: Dictionary<string, any>, key: string, value: any): void {
+        if (dict.contains(key))
+        {
+            const d = dict.getItem(key)
+            value += d
+        }
+        dict.setItem(key, value)
+    }
 /*
     //% shim=ENUM_GET
     //% blockId=actionName_enum_shim
@@ -232,3 +267,4 @@ namespace DataKind {
     //% isKind
     export const AttackDuration = create();
 }
+

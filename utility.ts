@@ -232,3 +232,78 @@ namespace controller {
         return _controllerState.wasPressed(button)
     }
 }
+
+namespace Math {
+    const EPSILON: number = 0.01
+    const TWO_PI: number = Math.PI * 2
+    const HALF_CIRCLE: number = 180.0
+    const FUL_CIRCLE: number = 360.0
+
+    //% block="distance between $source=variables_get(mySprite) and $target=variables_get(mySprite)"
+    export function distanceBetween(source: Sprite, target: Sprite): number {
+        return sqrt(pow(target.x - source.x, 2) + pow(target.y - source.y, 2))
+    }
+
+    //% block="distance between $source=variables_get(myGameObject) and $target=variables_get(myGameObject)"
+    export function distanceBetweenObjects(source: GameObject, target: GameObject): number {
+        return sqrt(pow(target._sprite.x - source._sprite.x, 2) + pow(target._sprite.y - source._sprite.y, 2))
+    }
+
+    //% block="position from $source=variables_get(mySprite) to $target=variables_get(mySprite) at $distance"
+    export function positionToward(source: Sprite, target: Sprite, distance: number): Point {
+        const sp = new Point(source.x, source.y)
+        const tp = new Point(target.x, target.y)
+        const angle = radiansFromTo(sp, tp)
+        const rx = cos(angle) * distance
+        const ry = sin(angle) * distance
+        return new Point(source.x + rx, source.y + ry)
+    }
+
+    //% block="create point with $x and $y"
+    export function createPoint(x: number, y: number): Point {
+        return new Point(x, y)
+    }
+
+    export function degreesToRadians(degrees: number): number {
+        return degrees * (PI / HALF_CIRCLE)
+    }
+
+    export function radiansFromTo(source: Point, target: Point): number {
+        return wrapRadians(atan2(target.y - source.y, target.x - source.x))
+    }
+
+    export function radiansToDegrees(radians: number): number {
+        return radians * (HALF_CIRCLE / PI)
+    }
+
+    export function wrapDegrees(degrees: number): number {
+        return radiansToDegrees(wrapRadians(degreesToRadians(degrees)))
+    }
+
+    export function wrapRadians(radians: number): number {
+        while (radians < -PI) { radians += TWO_PI }
+        while (radians > PI) { radians -= TWO_PI }
+        return radians
+    }
+}
+
+//% blockNamespace="Math"
+class Point {
+    _x: number
+    _y: number
+
+    //% blockCombine
+    get x() { return this._x }
+    //% blockCombine
+    set x(value: number) { this._x = value }
+
+    //% blockCombine
+    get y() { return this._y }
+    //% blockCombine
+    set y(value: number) { this._y = value }
+
+    constructor(px: number, py: number) {
+        this._x = px
+        this._y = py
+    }
+}

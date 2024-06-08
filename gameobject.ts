@@ -15,6 +15,9 @@ class GameObject {
     _animateWhenIdle: boolean
     _autoWalk: boolean
     _actionChanged: boolean
+    _onLoad: () => void
+    _onDestroy: () => void
+    _onUpdate: () => void
 
     constructor(fromBlueprint: Blueprint) {
         this._id = fromBlueprint.getName()
@@ -121,6 +124,13 @@ class GameObject {
         this._dataBank.flag.setItem(dataName, value)
     }
 
+    isNotVisible(): boolean {
+        return ((this._blueprint._images.getItem(FacingDirection.Down).count() == 0) &&
+            (this._blueprint._images.getItem(FacingDirection.Up).count() == 0) &&
+            (this._blueprint._images.getItem(FacingDirection.Left).count() == 0) &&
+            (this._blueprint._images.getItem(FacingDirection.Right).count() == 0))
+    }
+
     updateCooldowns(): void {
         if (this._dataBank.data.contains(DataKind.DamageCooldown)) {
             let coolDown: number = this._dataBank.data.getItem(DataKind.DamageCooldown)
@@ -169,6 +179,8 @@ class GameObject {
         }
     }
 
+    //_lastAnimatedFacing: FacingDirection
+
     updateAnimation(): void {
         const attackAnimated = this._blueprint._images.getItem(this._facing).contains(ActionKind.Attack)
         const isAttacking = ((this._action == ActionKind.Attack) && attackAnimated)
@@ -184,13 +196,21 @@ class GameObject {
         if (this._animateWhenIdle || this._isMoving || isAttacking) {
             let b1 = (this._lastAction == ActionKind.Attack)
             if (!this._animation || (this._wasFacing != this._facing) || (this._actionChanged && attackAnimated)) {
+                let f = this._facing
                 if (this._animation) { animation.stopAnimation(animation.AnimationTypes.ImageAnimation, this._sprite) }
-                const frames = this._blueprint.getImages(this._facing, this._action)
+                if (!attackAnimated) {
+                    //if (this._blueprint._images.getItem(this._lastAnimatedFacing).contains(ActionKind.Attack)) {
+                        //f = this._lastAnimatedFacing
+                    //}
+                }
+                const frames = this._blueprint.getImages(f, this._action)
                 const spd = this.getDataValue(DataKind.Speed)
                 const rate = this.getDataValue(DataKind.AnimateRate)
                 let frameint = ((1 / frames.length) * 1000) * (rate / spd)
                 this._animation = new animation.ImageAnimation(this._sprite, frames, frameint, true);
                 this._animation.init();
+                //const fau = this._blueprint.getFacingActionUsed(f, this._action)
+                //if ((fau[0] == f) && (fau[1] == this._action)) { this._lastAnimatedFacing = f }
             } else if (attackAnimated && b1 && (this._action == ActionKind.Walk)) {
                 doStop = true
             }
@@ -210,7 +230,7 @@ class GameObject {
  * Game object creation and manipulation
  **/
 //% color="#FF823F" weight=200 icon="\uf29a" block="GameObjects"
-//% groups='["Access","Modify","Data","Logic"]'
+//% groups='["Access","Modify","Data","Logic","Runtime"]'
 namespace gameObjects {
     //const emptyObject: GameObject = new GameObject(blueprints.blankBlueprint())
 
@@ -237,6 +257,8 @@ namespace gameObjects {
     //% block="destroy $obj=variables_get(myGameObject)"
     //% group="Access"
     export function destroyGameObject(obj: GameObject) {
+        if (obj._onDestroy) { obj._onDestroy() }
+        if (obj._blueprint._onDestroy) { obj._blueprint._onDestroy(obj) }
         engine.destroyGameObject(obj)
     }
 
@@ -264,7 +286,8 @@ namespace gameObjects {
         return (source.getDataValue(DataKind.AttackCooldown) <= 0)
     }
 
-    //%block="$source=variables_get(myGameObject) perform attack"
+    //% block="$source=variables_get(myGameObject) perform attack"
+    //% group="Runtime"
     export function performAttack(source: GameObject): void {
         if (canAttack(source)) {
             source.setAction(ActionKind.Attack)
@@ -274,20 +297,44 @@ namespace gameObjects {
         }
     }
 
+    //% block="on $_screen=variables_get(myGameObject) load" group="Runtime"
+    //% handlerStatement
+    export function onLoad(_object: GameObject, value: () => void): void {
+        _object._onLoad = value
+    }
+
+    //% block="on $_screen=variables_get(myGameObject) destroy" group="Runtime"
+    //% handlerStatement
+    export function onDestroy(_object: GameObject, value: () => void): void {
+        _object._onDestroy = value
+    }
+
+    //% block="on $_screen=variables_get(myGameObject) update" group="Runtime"
+    //% handlerStatement
+    export function onUpdate(_object: GameObject, value: () => void): void {
+        _object._onUpdate = value
+    }
+
     export function doUpdate() {
         const g: GameObject[] = engine.getGameObjects()
         if (g) {
             g.forEach((go: GameObject) => {
                 // Update damage and attack cooldowns
                 go.updateCooldowns()
-                // Update facing direction based on velocity
-                go.updateFacing()
+                if (!go.isNotVisible()) { 
+                    // Update facing direction based on velocity
+                    go.updateFacing()
+                    // Update animation and action
+                    go.updateAnimation()
+                 }
                 
-                // Update animation and action
-                go.updateAnimation()
-
+                if (!go._initialized) { 
+                    if (go._blueprint._onLoad) { go._blueprint._onLoad(go) }
+                    if (go._onLoad) { go._onLoad() }
+                }
                 // Update AI if any
-                if (go.getBlueprint()._aiUpdate) go.getBlueprint()._aiUpdate(go)
+                if (go.getBlueprint()._onUpdate) go.getBlueprint()._onUpdate(go)
+                if (go._onUpdate) { go._onUpdate() }
                 // Flag as initialized on first pass
                 if (!go._initialized) { go._initialized = true }
             })
