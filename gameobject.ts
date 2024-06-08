@@ -136,8 +136,16 @@ class GameObject {
                 coolDown = coolDown - engine.frameTime()
                 if (isNaN(coolDown)) { coolDown = 0 }
                 this._dataBank.data.setItem(DataKind.AttackCooldown, coolDown)
+            } 
+        }
+        if (this._dataBank.data.contains(DataKind.AttackDuration)) {
+            let coolDown: number = this._dataBank.data.getItem(DataKind.AttackDuration)
+            if (coolDown > 0) {
+                coolDown = coolDown - engine.frameTime()
+                if (isNaN(coolDown)) { coolDown = 0 }
+                this._dataBank.data.setItem(DataKind.AttackDuration, coolDown)
             } else if (this._action == ActionKind.Attack) {
-                this._dataBank.data.setItem(DataKind.AttackCooldown, 0)
+                this._dataBank.data.setItem(DataKind.AttackDuration, 0)
                 this.setAction(ActionKind.None)
             }
         }
@@ -163,7 +171,7 @@ class GameObject {
 
     updateAnimation(): void {
         const attackAnimated = this._blueprint._images.getItem(this._facing).contains(ActionKind.Attack)
-        const isAttacking = (this._action == ActionKind.Attack && attackAnimated)
+        const isAttacking = ((this._action == ActionKind.Attack) && attackAnimated)
         let doStop = false;
 
         if (this._autoWalk && !isAttacking) {
@@ -258,8 +266,11 @@ namespace gameObjects {
 
     //%block="$source=variables_get(myGameObject) perform attack"
     export function performAttack(source: GameObject): void {
-        source.setAction(ActionKind.Attack)
-        source.setDataValue(DataKind.AttackCooldown, source._blueprint.getDataValue(DataKind.AttackCooldown))
+        if (canAttack(source)) {
+            source.setAction(ActionKind.Attack)
+            source.setDataValue(DataKind.AttackCooldown, source._blueprint.getDataValue(DataKind.AttackCooldown))
+            source.setDataValue(DataKind.AttackDuration, source._blueprint.getDataValue(DataKind.AttackDuration))
+        }
     }
 
     export function doUpdate() {
@@ -270,10 +281,12 @@ namespace gameObjects {
                 go.updateCooldowns()
                 // Update facing direction based on velocity
                 go.updateFacing()
-                // Update AI if any
-                if (go.getBlueprint()._aiUpdate) go.getBlueprint()._aiUpdate(go)
+                
                 // Update animation and action
                 go.updateAnimation()
+
+                // Update AI if any
+                if (go.getBlueprint()._aiUpdate) go.getBlueprint()._aiUpdate(go)
                 // Flag as initialized on first pass
                 if (!go._initialized) { go._initialized = true }
             })
