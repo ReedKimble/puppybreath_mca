@@ -302,6 +302,21 @@ namespace gameObjects {
         }
     }
 
+    //% block="get objects of $kind=spritekind overlapping $target=variables_get(myGameObject)"
+    //% group="Access"
+    export function getOverlappingKind(target: GameObject, kind: number): GameObject[] {
+        const result: GameObject[] = []
+        const curScreen = engine.getGameScreen(engine.getCurrentScreen())
+        if (curScreen) {
+            curScreen._gameObjects.forEach((g: GameObject) => {
+                if (target._sprite.overlapsWith(g._sprite)) {
+                    result.push(g)
+                }
+            })
+        }
+        return result
+    }
+
     //% block="on $_screen=variables_get(myGameObject) load" group="Runtime"
     //% handlerStatement
     export function onLoad(_object: GameObject, value: () => void): void {

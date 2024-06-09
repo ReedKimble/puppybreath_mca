@@ -101,24 +101,6 @@ namespace engine {
         return []
     }
 
-    //% draggableParameters
-    //% block="for each $other overlapping $target=variables_get(myGameObject) of $kind=spritekind do actions"
-    //% group="Access"
-    //% handlerStatement
-    export function getOverlappingKind(target: GameObject, kind: number, action: (other: GameObject) => {}): void {
-        if (_screens.contains(_currentScreen)) {
-            const result: GameObject[] = []
-            const curScreen = _screens.getItem(_currentScreen)
-            curScreen._gameObjects.forEach((g: GameObject) => {
-                if (target._sprite.overlapsWith(g._sprite)) {
-                    action(g)
-                }
-            })
-            //return result
-        }
-        //return []
-    }
-
     //% block="destroy all game objects"
     //% group="Access"
     export function destroyAllGameObjects(): void {
